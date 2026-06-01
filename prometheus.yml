@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: api-gateway
+    static_configs:
+      - targets: ["api-gateway:3000"]
+    metrics_path: /metrics
+
+  - job_name: identity-service
+    static_configs:
+      - targets: ["identity-service:3001"]
+    metrics_path: /metrics
+
+  - job_name: video-service
+    static_configs:
+      - targets: ["video-service:3002"]
+    metrics_path: /metrics
+
+  - job_name: processing-service
+    static_configs:
+      - targets: ["processing-service:3003"]
+    metrics_path: /metrics
+
+  - job_name: status-service
+    static_configs:
+      - targets: ["status-service:3004"]
+    metrics_path: /metrics
+
+  - job_name: notification-service
+    static_configs:
+      - targets: ["notification-service:3005"]
+    metrics_path: /metrics

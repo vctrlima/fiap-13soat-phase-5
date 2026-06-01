@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+.env.*.local
+*.log
+.vscode
+.DS_Store
+uploads/
+outputs/
+temp/
+*.zip
+services/**/dist/
+services/**/coverage/

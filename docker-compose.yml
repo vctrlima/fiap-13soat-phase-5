@@ -1,0 +1,320 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-api-gateway
+    environment:
+      PORT: 3000
+      JWT_SECRET: changeme-secret
+      GATEWAY_RATE_LIMIT_MAX: 1200
+      GATEWAY_RATE_LIMIT_WINDOW: 1 minute
+      GATEWAY_UPSTREAM_TIMEOUT_MS: 15000
+      GATEWAY_UPSTREAM_RETRIES: 1
+      IDENTITY_SERVICE_URL: http://identity-service:3001
+      VIDEO_SERVICE_URL: http://video-service:3002
+      STATUS_SERVICE_URL: http://status-service:3004
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      AWS_ENDPOINT: http://ministack:4566
+    ports:
+      - "3000:3000"
+    depends_on:
+      identity-service:
+        condition: service_healthy
+      video-service:
+        condition: service_healthy
+      status-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-identity-service
+    environment:
+      PORT: 3001
+      IDENTITY_RATE_LIMIT_MAX: 600
+      IDENTITY_RATE_LIMIT_WINDOW: 1 minute
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiapx
+      JWT_SECRET: changeme-secret
+      JWT_REFRESH_SECRET: changeme-refresh-secret
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3001/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  video-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-video-service
+    environment:
+      PORT: 3002
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiapx
+      RAW_VIDEOS_BUCKET: raw-videos
+      VIDEO_PROCESSING_QUEUE_URL: http://ministack:4566/000000000000/video-processing
+      VIDEO_EVENTS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:video-domain-events
+      AWS_ENDPOINT: http://ministack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_MAX_ATTEMPTS: 3
+      VIDEO_RATE_LIMIT_MAX: 300
+      VIDEO_RATE_LIMIT_WINDOW: 1 minute
+      VIDEO_MAX_UPLOAD_BYTES: 1073741824
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ministack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3002/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  processing-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-processing-service
+    environment:
+      PORT: 3003
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiapx
+      RAW_VIDEOS_BUCKET: raw-videos
+      PROCESSED_ZIPS_BUCKET: processed-zips
+      VIDEO_PROCESSING_QUEUE_URL: http://ministack:4566/000000000000/video-processing
+      VIDEO_NOTIFICATION_QUEUE_URL: http://ministack:4566/000000000000/video-notification
+      AWS_ENDPOINT: http://ministack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_MAX_ATTEMPTS: 3
+      PROCESSING_RATE_LIMIT_MAX: 1200
+      PROCESSING_RATE_LIMIT_WINDOW: 1 minute
+      PROCESSING_WORKER_CONCURRENCY: 4
+      PROCESSING_MAX_MESSAGES_PER_POLL: 4
+      PROCESSING_VISIBILITY_TIMEOUT_SECONDS: 120
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ministack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3003/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  status-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-status-service
+    environment:
+      PORT: 3004
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiapx
+      REDIS_URL: redis://redis:6379
+      PROCESSED_ZIPS_BUCKET: processed-zips
+      AWS_ENDPOINT: http://ministack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_MAX_ATTEMPTS: 3
+      JWT_SECRET: changeme-secret
+      STATUS_RATE_LIMIT_MAX: 1200
+      STATUS_RATE_LIMIT_WINDOW: 1 minute
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ministack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3004/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        SERVICE_PATH: services/fiap-13soat-techchallenge-5-notification-service
+    environment:
+      PORT: 3005
+      VIDEO_NOTIFICATION_QUEUE_URL: http://ministack:4566/000000000000/video-notification
+      AWS_ENDPOINT: http://ministack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_MAX_ATTEMPTS: 3
+      NOTIFICATION_RATE_LIMIT_MAX: 1200
+      NOTIFICATION_RATE_LIMIT_WINDOW: 1 minute
+      NOTIFICATION_WORKER_CONCURRENCY: 5
+      NOTIFICATION_MAX_MESSAGES_PER_POLL: 5
+      MAILPIT_HOST: mailpit
+      MAILPIT_PORT: 1025
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      ministack:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3005/health/live >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiapx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fiap -d fiapx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  ministack:
+    image: localstack/localstack:3.8
+    environment:
+      SERVICES: s3,sqs,sns,secretsmanager
+      DEBUG: 1
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/init-ministack.sh:/etc/localstack/init/ready.d/init-ministack.sh
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3006:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docs/observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./docs/observability/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  grafana_data:
