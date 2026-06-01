@@ -1,0 +1,49 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Uploads Total",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "uploads_total", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Processing Completed",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "processing_completed_total", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Processing Failed",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "processing_failed_total", "refId": "A" }]
+    },
+    {
+      "type": "stat",
+      "title": "Queue Size",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "queue_size", "refId": "A" }]
+    },
+    {
+      "type": "timeseries",
+      "title": "Processing Duration",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(processing_duration_seconds_sum[5m]) / rate(processing_duration_seconds_count[5m])",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["fiapx"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "FIAPX Overview",
+  "version": 1
+}
