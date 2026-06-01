@@ -6,7 +6,7 @@ Event-driven platform for video upload and asynchronous processing using hexagon
 
 - Node.js LTS + TypeScript + Fastify
 - PostgreSQL + Redis
-- Local Ministack (via LocalStack) with AWS SDK v3 (S3, SQS, SNS, Secrets Manager)
+- Local Ministack with AWS SDK v3 (S3, SQS, SNS, Secrets Manager)
 - OpenTelemetry + Prometheus + Grafana + Jaeger
 - Docker Compose
 

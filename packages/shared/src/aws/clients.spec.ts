@@ -41,7 +41,7 @@ describe("aws clients", () => {
 
   it("respects env configuration", async () => {
     vi.stubEnv("AWS_REGION", "sa-east-1");
-    vi.stubEnv("AWS_ENDPOINT", "http://localstack:4566");
+    vi.stubEnv("AWS_ENDPOINT", "http://ministack:4566");
     vi.stubEnv("AWS_MAX_ATTEMPTS", "7");
     vi.stubEnv("AWS_ACCESS_KEY_ID", "id");
     vi.stubEnv("AWS_SECRET_ACCESS_KEY", "secret");
@@ -51,7 +51,7 @@ describe("aws clients", () => {
     expect(s3CtorMock).toHaveBeenCalledWith(
       expect.objectContaining({
         region: "sa-east-1",
-        endpoint: "http://localstack:4566",
+        endpoint: "http://ministack:4566",
         maxAttempts: 7,
         credentials: { accessKeyId: "id", secretAccessKey: "secret" },
       }),

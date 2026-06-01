@@ -27,7 +27,11 @@ services:
       status-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3000/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -55,7 +59,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3001/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3001/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -92,7 +100,11 @@ services:
       ministack:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3002/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3002/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -132,7 +144,11 @@ services:
       ministack:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3003/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3003/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -170,7 +186,11 @@ services:
       ministack:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3004/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3004/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -203,7 +223,11 @@ services:
       mailpit:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3005/health/live >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3005/health/live >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -238,18 +262,18 @@ services:
     restart: unless-stopped
 
   ministack:
-    image: localstack/localstack:3.8
+    image: ministackorg/ministack:latest
     environment:
       SERVICES: s3,sqs,sns,secretsmanager
-      DEBUG: 1
+      LOG_LEVEL: DEBUG
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./scripts/init-ministack.sh:/etc/localstack/init/ready.d/init-ministack.sh
+      - ./scripts/init-ministack.sh:/docker-entrypoint-initaws.d/ready.d/init-ministack.sh
     ports:
       - "4566:4566"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_ministack/health"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -297,7 +321,11 @@ services:
       prometheus:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3000/api/health >/dev/null || exit 1",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
