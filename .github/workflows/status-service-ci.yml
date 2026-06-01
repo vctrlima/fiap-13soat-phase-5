@@ -1,0 +1,57 @@
+name: status-service-ci
+
+on:
+    push:
+        branches: ["main"]
+        paths:
+            - "services/fiap-13soat-techchallenge-5-status-service/**"
+            - "packages/shared/**"
+            - "package-lock.json"
+            - "package.json"
+            - "tsconfig.base.json"
+    pull_request:
+        branches: ["main"]
+        types: [opened, synchronize, reopened, ready_for_review]
+        paths:
+            - "services/fiap-13soat-techchallenge-5-status-service/**"
+            - "packages/shared/**"
+            - "package-lock.json"
+            - "package.json"
+            - "tsconfig.base.json"
+
+jobs:
+    quality-gate:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build shared package
+              run: npm run build --workspace @fiap-13soat/shared
+
+            - name: Lint service
+              run: npm run lint --workspace fiap-13soat-techchallenge-5-status-service
+
+            - name: Run tests
+              run: npm run test --workspace fiap-13soat-techchallenge-5-status-service
+
+            - name: Run coverage
+              run: npm run test:coverage --workspace fiap-13soat-techchallenge-5-status-service
+
+            - name: Typecheck and build service
+              run: npm run build --workspace fiap-13soat-techchallenge-5-status-service
+
+            - name: Security audit
+              run: npm audit --workspace fiap-13soat-techchallenge-5-status-service --audit-level=high
