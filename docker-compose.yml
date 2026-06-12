@@ -273,7 +273,13 @@ services:
     ports:
       - "4566:4566"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_ministack/health"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:4566/_ministack/health', timeout=5)",
+        ]
       interval: 15s
       timeout: 10s
       retries: 10

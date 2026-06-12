@@ -82,14 +82,31 @@ export const proxyRequest = async (
     }
   }
 
-  const headers = {
-    ...(request.headers as Record<string, string>),
-    host: undefined,
-  } as Record<string, string | undefined>;
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(request.headers)) {
+    const lowerKey = key.toLowerCase();
+    if (
+      lowerKey === "host" ||
+      lowerKey === "connection" ||
+      lowerKey === "transfer-encoding" ||
+      lowerKey === "content-length"
+    ) {
+      continue;
+    }
+
+    if (typeof value === "string") {
+      headers.set(key, value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      headers.set(key, value.join(","));
+    }
+  }
 
   let response: Response;
   try {
-    response = await fetchUpstream(url, request, headers as HeadersInit, body);
+    response = await fetchUpstream(url, request, headers, body);
   } catch (error) {
     const message =
       (error as Error).name === "AbortError"
