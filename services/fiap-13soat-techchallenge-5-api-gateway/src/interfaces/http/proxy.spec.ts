@@ -146,4 +146,66 @@ describe("proxyRequest", () => {
       details: "aborted",
     });
   });
+
+  it("uses dedicated upload timeout for upload route", async () => {
+    const fetchMock = vi.mocked(fetch);
+    const abortError = new Error("aborted");
+    abortError.name = "AbortError";
+    fetchMock.mockRejectedValue(abortError);
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+
+    const reply = makeReply();
+    const request = {
+      method: "POST",
+      headers: {
+        "content-type": "multipart/form-data; boundary=test-boundary",
+      },
+      body: undefined,
+      raw: {},
+    };
+
+    await proxyRequest(
+      request as never,
+      reply as never,
+      "http://video-service:3002",
+      "/videos/upload",
+    );
+
+    expect(reply.statusCode).toBe(503);
+    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 120000);
+  });
+
+  it("streams binary download responses", async () => {
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockResolvedValueOnce(
+      new Response(new Uint8Array([0x50, 0x4b, 0x03, 0x04]), {
+        status: 200,
+        headers: {
+          "content-type": "application/zip",
+          "content-disposition": "attachment; filename=test.zip",
+        },
+      }),
+    );
+
+    const reply = makeReply();
+    const request = {
+      method: "GET",
+      headers: {},
+      body: undefined,
+      raw: {},
+    };
+
+    await proxyRequest(
+      request as never,
+      reply as never,
+      "http://status-service:3004",
+      "/status/videos/v-1/download",
+    );
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.headers["content-type"]).toBe("application/zip");
+    expect(reply.headers["content-disposition"]).toContain("test.zip");
+    expect(reply.body).toBeTruthy();
+    expect(typeof (reply.body as { pipe?: unknown }).pipe).toBe("function");
+  });
 });

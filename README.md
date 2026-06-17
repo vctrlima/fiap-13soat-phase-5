@@ -109,6 +109,7 @@ curl -L -o result.zip \
 
 - Configurable per-service rate limiting with `*_RATE_LIMIT_MAX` and `*_RATE_LIMIT_WINDOW`.
 - API Gateway upstream timeout/retry with `GATEWAY_UPSTREAM_TIMEOUT_MS` and `GATEWAY_UPSTREAM_RETRIES`.
+- Dedicated upload timeout for `POST /videos/upload` with `GATEWAY_UPLOAD_TIMEOUT_MS`.
 - Configurable SQS consumer throughput via `PROCESSING_WORKER_CONCURRENCY`, `PROCESSING_MAX_MESSAGES_PER_POLL`, `NOTIFICATION_WORKER_CONCURRENCY`, and `NOTIFICATION_MAX_MESSAGES_PER_POLL`.
 - DLQ enabled for processing and notification queues to prevent invalid-message blocking.
 
