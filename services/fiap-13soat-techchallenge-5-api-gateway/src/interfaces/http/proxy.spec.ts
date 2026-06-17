@@ -205,7 +205,7 @@ describe("proxyRequest", () => {
     expect(reply.statusCode).toBe(200);
     expect(reply.headers["content-type"]).toBe("application/zip");
     expect(reply.headers["content-disposition"]).toContain("test.zip");
-    expect(reply.body).toBeTruthy();
-    expect(typeof (reply.body as { pipe?: unknown }).pipe).toBe("function");
+    expect(reply.headers["content-length"]).toBe("4");
+    expect(reply.body).toEqual(Buffer.from([0x50, 0x4b, 0x03, 0x04]));
   });
 });

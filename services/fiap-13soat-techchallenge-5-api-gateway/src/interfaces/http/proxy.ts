@@ -1,6 +1,4 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { Readable } from "node:stream";
-import type { ReadableStream as WebReadableStream } from "node:stream/web";
 
 const upstreamTimeoutMs = Number(
   process.env.GATEWAY_UPSTREAM_TIMEOUT_MS ?? 15000,
@@ -155,15 +153,10 @@ export const proxyRequest = async (
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!isTextResponse(contentType)) {
-    if (response.body) {
-      reply.send(
-        Readable.fromWeb(response.body as unknown as WebReadableStream),
-      );
-      return;
-    }
-
     const arrayBuffer = await response.arrayBuffer();
-    reply.send(Buffer.from(arrayBuffer));
+    const buffer = Buffer.from(arrayBuffer);
+    reply.header("content-length", String(buffer.length));
+    reply.send(buffer);
     return;
   }
 
