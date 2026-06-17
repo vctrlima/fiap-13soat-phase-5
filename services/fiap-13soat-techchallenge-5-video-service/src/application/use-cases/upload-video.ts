@@ -18,6 +18,7 @@ export const uploadVideo = async (input: {
   filename: string;
   contentType: string;
   fileBody: Buffer | Readable;
+  contentLength?: number;
   correlationId: string;
 }): Promise<{ videoId: string; status: string }> => {
   const videoId = randomUUID();
@@ -30,6 +31,7 @@ export const uploadVideo = async (input: {
       Key: s3Key,
       Body: input.fileBody,
       ContentType: input.contentType,
+      ContentLength: input.contentLength,
     }),
   );
 

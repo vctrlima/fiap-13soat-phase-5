@@ -10,13 +10,24 @@
 docker compose up -d --build
 ```
 
-3. Health Validation
+3. Clean Restart (from zero)
+
+Use this when you want to reset everything (containers, network, and volumes):
+
+```bash
+docker compose down -v --remove-orphans
+docker compose up -d --build
+```
+
+The `ministack` ready script is idempotent and validates required resources on startup.
+
+4. Health Validation
 
 ```bash
 docker compose ps
 ```
 
-4. Ports
+5. Ports
 
 - API: 3000
 - Mailpit: 8025

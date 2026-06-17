@@ -48,6 +48,7 @@ describe("uploadVideo", () => {
       filename: "video.mp4",
       contentType: "video/mp4",
       fileBody: buffer,
+      contentLength: buffer.length,
       correlationId: "corr-1",
     });
 

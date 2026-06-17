@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const uploadVideoMock = vi.hoisted(() => vi.fn());
@@ -51,7 +52,10 @@ describe("registerVideoRoutes", () => {
     registerVideoRoutes(app as never);
 
     const reply = makeReply();
-    await postHandlers["/videos/upload"]({ file: async () => null, headers: {} }, reply);
+    await postHandlers["/videos/upload"](
+      { file: async () => null, headers: {} },
+      reply,
+    );
 
     expect(reply.statusCode).toBe(400);
     expect(reply.payload).toEqual({ message: "video file is required" });
@@ -72,7 +76,10 @@ describe("registerVideoRoutes", () => {
     const { registerVideoRoutes } = await import("./routes.js");
     registerVideoRoutes(app as never);
 
-    uploadVideoMock.mockResolvedValueOnce({ videoId: "v-1", status: "PENDING" });
+    uploadVideoMock.mockResolvedValueOnce({
+      videoId: "v-1",
+      status: "PENDING",
+    });
 
     const reply = makeReply();
     await postHandlers["/videos/upload"](
@@ -80,7 +87,7 @@ describe("registerVideoRoutes", () => {
         file: async () => ({
           filename: "video.mp4",
           mimetype: "video/mp4",
-          file: Buffer.from("abc"),
+          file: Readable.from([Buffer.from("abc")]),
         }),
         headers: { "x-user-id": "u-1" },
       },
@@ -92,6 +99,7 @@ describe("registerVideoRoutes", () => {
       filename: "video.mp4",
       contentType: "video/mp4",
       fileBody: Buffer.from("abc"),
+      contentLength: 3,
       correlationId: "corr-1",
     });
     expect(reply.statusCode).toBe(202);

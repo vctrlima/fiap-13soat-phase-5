@@ -2,6 +2,16 @@ import { correlationFromHeaders, registry } from "@fiap-13soat/shared";
 import type { FastifyInstance } from "fastify";
 import { uploadVideo } from "../../application/use-cases/upload-video.js";
 
+const streamToBuffer = async (
+  stream: NodeJS.ReadableStream,
+): Promise<Buffer> => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
+
 export const registerVideoRoutes = (app: FastifyInstance): void => {
   app.get("/health/live", async () => ({
     status: "ok",
@@ -22,12 +32,14 @@ export const registerVideoRoutes = (app: FastifyInstance): void => {
     const userIdHeader = request.headers["x-user-id"];
     const userId =
       typeof userIdHeader === "string" ? userIdHeader : "anonymous";
+    const fileBuffer = await streamToBuffer(part.file);
 
     const result = await uploadVideo({
       userId,
       filename: part.filename,
       contentType: part.mimetype,
-      fileBody: part.file,
+      fileBody: fileBuffer,
+      contentLength: fileBuffer.length,
       correlationId: correlationFromHeaders(request.headers),
     });
 
