@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 const queryMock = vi.hoisted(() => vi.fn());
 
 vi.mock("pg", () => ({
-  Pool: vi.fn().mockImplementation(() => ({ query: queryMock })),
+  Pool: vi.fn().mockImplementation(function MockPool() {
+    return { query: queryMock };
+  }),
 }));
 
 describe("identity postgres", () => {

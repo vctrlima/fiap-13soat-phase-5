@@ -136,4 +136,22 @@ describe("processVideoEvent", () => {
     );
     expect(rmMock).toHaveBeenCalledTimes(1);
   });
+
+  it("fails when generated zip is empty", async () => {
+    queryMock
+      .mockResolvedValueOnce({ rowCount: 0, rows: [] })
+      .mockResolvedValue({ rowCount: 1, rows: [] });
+    readFileMock.mockResolvedValueOnce(Buffer.alloc(0));
+
+    const { processVideoEvent } = await import("./process-video.js");
+
+    await expect(processVideoEvent(event)).rejects.toThrow(
+      "Generated ZIP is empty",
+    );
+    expect(processingFailedIncMock).toHaveBeenCalledTimes(1);
+    expect(queryMock).not.toHaveBeenCalledWith(
+      "INSERT INTO processed_events (event_id) VALUES ($1) ON CONFLICT DO NOTHING",
+      ["evt-1"],
+    );
+  });
 });

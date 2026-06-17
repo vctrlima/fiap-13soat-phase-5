@@ -87,4 +87,18 @@ describe("status queries", () => {
     expect(result).toBeNull();
     expect(s3SendMock).not.toHaveBeenCalled();
   });
+
+  it("returns null when downloaded zip is empty", async () => {
+    redisGetMock.mockResolvedValueOnce(
+      JSON.stringify({ video_id: "v-1", zip_key: "v-1/v-1.zip" }),
+    );
+    s3SendMock.mockResolvedValueOnce({
+      Body: Readable.from([Buffer.alloc(0)]),
+    });
+
+    const { getDownloadBuffer } = await import("./status-queries.js");
+    const result = await getDownloadBuffer("v-1");
+
+    expect(result).toBeNull();
+  });
 });

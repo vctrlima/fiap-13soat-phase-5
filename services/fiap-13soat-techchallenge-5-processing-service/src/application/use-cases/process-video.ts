@@ -120,13 +120,22 @@ export const processVideoEvent = async (
     ]);
 
     const zipFile = join(workDir, `${event.payload.videoId}.zip`);
+    const frameFiles = await readdir(framesDir);
+    if (frameFiles.length === 0) {
+      throw new Error("No frames generated for video");
+    }
+
     await execFileAsync("zip", [
       "-j",
       zipFile,
-      ...(await readdir(framesDir)).map((name) => join(framesDir, name)),
+      ...frameFiles.map((name) => join(framesDir, name)),
     ]);
 
     const zipBuffer = await readFile(zipFile);
+    if (!zipBuffer.length) {
+      throw new Error("Generated ZIP is empty");
+    }
+
     const zipKey = makeZipKey(event.payload.videoId);
 
     await s3Client.send(
@@ -135,6 +144,7 @@ export const processVideoEvent = async (
         Key: zipKey,
         Body: zipBuffer,
         ContentType: "application/zip",
+        ContentLength: zipBuffer.length,
       }),
     );
 

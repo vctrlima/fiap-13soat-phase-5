@@ -71,5 +71,10 @@ export const getDownloadBuffer = async (
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
 
-  return Buffer.concat(chunks);
+  const zipBuffer = Buffer.concat(chunks);
+  if (!zipBuffer.length) {
+    return null;
+  }
+
+  return zipBuffer;
 };
