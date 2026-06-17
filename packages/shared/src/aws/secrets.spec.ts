@@ -14,7 +14,9 @@ vi.mock("@aws-sdk/client-secrets-manager", () => ({
 describe("loadAppSecrets", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    commandMock.mockImplementation((input: unknown) => ({ input }));
+    commandMock.mockImplementation(function (this: unknown, input: unknown) {
+      return { input };
+    });
   });
 
   it("returns parsed secret when SecretString exists", async () => {

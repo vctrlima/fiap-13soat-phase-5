@@ -3,10 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const startMock = vi.hoisted(() => vi.fn());
 const shutdownMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const nodeSdkCtorMock = vi.hoisted(() =>
-  vi.fn().mockImplementation(() => ({
-    start: startMock,
-    shutdown: shutdownMock,
-  })),
+  vi.fn().mockImplementation(function (this: unknown) {
+    return {
+      start: startMock,
+      shutdown: shutdownMock,
+    };
+  }),
 );
 const exporterCtorMock = vi.hoisted(() => vi.fn());
 

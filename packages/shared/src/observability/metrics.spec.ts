@@ -1,11 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 
 const collectDefaultMetricsMock = vi.hoisted(() => vi.fn());
-const counterMock = vi.hoisted(() => vi.fn().mockImplementation((cfg) => cfg));
-const histogramMock = vi.hoisted(() =>
-  vi.fn().mockImplementation((cfg) => cfg),
+const counterMock = vi.hoisted(() =>
+  vi.fn().mockImplementation(function (this: unknown, cfg: unknown) {
+    return cfg;
+  }),
 );
-const gaugeMock = vi.hoisted(() => vi.fn().mockImplementation((cfg) => cfg));
+const histogramMock = vi.hoisted(() =>
+  vi.fn().mockImplementation(function (this: unknown, cfg: unknown) {
+    return cfg;
+  }),
+);
+const gaugeMock = vi.hoisted(() =>
+  vi.fn().mockImplementation(function (this: unknown, cfg: unknown) {
+    return cfg;
+  }),
+);
 const registerMock = vi.hoisted(() => ({ contentType: "text/plain" }));
 
 vi.mock("prom-client", () => ({
