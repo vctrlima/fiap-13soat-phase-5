@@ -2,7 +2,7 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-api-gateway
     environment:
@@ -41,7 +41,7 @@ services:
   identity-service:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-identity-service
     environment:
@@ -73,7 +73,7 @@ services:
   video-service:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-video-service
     environment:
@@ -114,7 +114,7 @@ services:
   processing-service:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-processing-service
     environment:
@@ -158,7 +158,7 @@ services:
   status-service:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-status-service
     environment:
@@ -200,7 +200,7 @@ services:
   notification-service:
     build:
       context: .
-      dockerfile: Dockerfile.service
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: services/fiap-13soat-techchallenge-5-notification-service
     environment:
