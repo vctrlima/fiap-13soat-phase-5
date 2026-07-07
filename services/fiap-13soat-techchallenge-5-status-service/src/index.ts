@@ -1,7 +1,11 @@
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { initTracing, stopTracing } from "@fiap-13soat/shared";
+import {
+  initTracing,
+  registerHttpMetrics,
+  stopTracing,
+} from "@fiap-13soat/shared";
 import Fastify from "fastify";
 import { redis } from "./infrastructure/cache/redis.js";
 import { initStatusSchema, pool } from "./infrastructure/database/postgres.js";
@@ -22,6 +26,7 @@ const bootstrap = async (): Promise<void> => {
     timeWindow: serviceRateLimitWindow,
   });
 
+  registerHttpMetrics(app, "status-service");
   registerStatusRoutes(app);
 
   await app.listen({ host: "0.0.0.0", port: Number(process.env.PORT ?? 3004) });

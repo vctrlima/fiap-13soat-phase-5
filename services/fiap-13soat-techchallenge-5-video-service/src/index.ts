@@ -2,7 +2,11 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
-import { initTracing, stopTracing } from "@fiap-13soat/shared";
+import {
+  initTracing,
+  registerHttpMetrics,
+  stopTracing,
+} from "@fiap-13soat/shared";
 import Fastify from "fastify";
 import { initVideoSchema, pool } from "./infrastructure/database/postgres.js";
 import { registerVideoRoutes } from "./interfaces/http/routes.js";
@@ -31,6 +35,7 @@ const bootstrap = async (): Promise<void> => {
     },
   });
 
+  registerHttpMetrics(app, "video-service");
   registerVideoRoutes(app);
 
   await app.listen({ host: "0.0.0.0", port: Number(process.env.PORT ?? 3002) });

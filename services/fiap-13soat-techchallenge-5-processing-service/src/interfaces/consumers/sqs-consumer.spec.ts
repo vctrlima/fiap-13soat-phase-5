@@ -4,12 +4,14 @@ const sendMock = vi.hoisted(() => vi.fn());
 const processVideoEventMock = vi.hoisted(() => vi.fn());
 const activeWorkersSetMock = vi.hoisted(() => vi.fn());
 const queueSizeSetMock = vi.hoisted(() => vi.fn());
+const queueOldestMessageAgeSecondsSetMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@fiap-13soat/shared", () => ({
   sqsClient: { send: sendMock },
   metrics: {
     activeWorkers: { set: activeWorkersSetMock },
     queueSize: { set: queueSizeSetMock },
+    queueOldestMessageAgeSeconds: { set: queueOldestMessageAgeSecondsSetMock },
   },
 }));
 
@@ -40,7 +42,12 @@ describe("processing sqs consumer", () => {
         const commandName = command.constructor?.name;
 
         if (commandName === "GetQueueAttributesCommand") {
-          return { Attributes: { ApproximateNumberOfMessages: "1" } };
+          return {
+            Attributes: {
+              ApproximateNumberOfMessages: "1",
+              ApproximateAgeOfOldestMessage: "12",
+            },
+          };
         }
         if (commandName === "ReceiveMessageCommand") {
           return {
@@ -72,5 +79,6 @@ describe("processing sqs consumer", () => {
     expect(processVideoEventMock).toHaveBeenCalledTimes(1);
     expect(sendMock).toHaveBeenCalled();
     expect(activeWorkersSetMock).toHaveBeenCalledWith(0);
+    expect(queueOldestMessageAgeSecondsSetMock).toHaveBeenCalledWith(12);
   });
 });

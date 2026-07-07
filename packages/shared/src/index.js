@@ -4,3 +4,4 @@ export * from "./aws/clients.js";
 export * from "./observability/metrics.js";
 export * from "./observability/tracing.js";
 export * from "./utils/correlation.js";
+export * from "./observability/http-metrics.js";

@@ -33,9 +33,11 @@ describe("metrics", () => {
     const { metrics, registry } = await import("./metrics.ts");
 
     expect(collectDefaultMetricsMock).toHaveBeenCalledTimes(1);
-    expect(counterMock).toHaveBeenCalledTimes(4);
-    expect(histogramMock).toHaveBeenCalledTimes(1);
-    expect(gaugeMock).toHaveBeenCalledTimes(2);
+    expect(counterMock).toHaveBeenCalledTimes(5);
+    expect(histogramMock).toHaveBeenCalledTimes(2);
+    expect(gaugeMock).toHaveBeenCalledTimes(3);
+    expect(metrics.httpRequestsTotal).toBeTruthy();
+    expect(metrics.queueOldestMessageAgeSeconds).toBeTruthy();
     expect(metrics.uploadsTotal).toBeTruthy();
     expect(registry).toBe(registerMock);
   });

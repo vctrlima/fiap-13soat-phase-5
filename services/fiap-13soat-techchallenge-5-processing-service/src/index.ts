@@ -1,7 +1,12 @@
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { initTracing, registry, stopTracing } from "@fiap-13soat/shared";
+import {
+  initTracing,
+  registerHttpMetrics,
+  registry,
+  stopTracing,
+} from "@fiap-13soat/shared";
 import Fastify from "fastify";
 import {
   initProcessingSchema,
@@ -13,7 +18,9 @@ import {
 } from "./interfaces/consumers/sqs-consumer.js";
 
 const app = Fastify({ logger: true });
-const serviceRateLimitMax = Number(process.env.PROCESSING_RATE_LIMIT_MAX ?? 1200);
+const serviceRateLimitMax = Number(
+  process.env.PROCESSING_RATE_LIMIT_MAX ?? 1200,
+);
 const serviceRateLimitWindow =
   process.env.PROCESSING_RATE_LIMIT_WINDOW ?? "1 minute";
 
@@ -28,6 +35,7 @@ const bootstrap = async (): Promise<void> => {
     timeWindow: serviceRateLimitWindow,
   });
 
+  registerHttpMetrics(app, "processing-service");
   app.get("/health/live", async () => ({
     status: "ok",
     service: "processing-service",

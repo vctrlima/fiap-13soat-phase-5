@@ -5,6 +5,7 @@ import rateLimit from "@fastify/rate-limit";
 import {
   correlationFromHeaders,
   initTracing,
+  registerHttpMetrics,
   registry,
   stopTracing,
 } from "@fiap-13soat/shared";
@@ -33,6 +34,7 @@ const bootstrap = async (): Promise<void> => {
     timeWindow: gatewayRateLimitWindow,
   });
   await app.register(multipart);
+  registerHttpMetrics(app, "api-gateway");
 
   app.get("/health/live", async () => ({
     status: "ok",
@@ -97,12 +99,10 @@ const bootstrap = async (): Promise<void> => {
         ) {
           return reply.code(401).send({ message: "unauthorized" });
         }
-        return reply
-          .code(500)
-          .send({
-            message: "internal gateway error",
-            details: (error as Error).message,
-          });
+        return reply.code(500).send({
+          message: "internal gateway error",
+          details: (error as Error).message,
+        });
       }
     },
   });

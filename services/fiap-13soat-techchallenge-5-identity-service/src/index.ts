@@ -1,7 +1,12 @@
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { initTracing, loadAppSecrets, stopTracing } from "@fiap-13soat/shared";
+import {
+  initTracing,
+  loadAppSecrets,
+  registerHttpMetrics,
+  stopTracing,
+} from "@fiap-13soat/shared";
 import Fastify from "fastify";
 import {
   initIdentitySchema,
@@ -30,6 +35,7 @@ const bootstrap = async (): Promise<void> => {
     timeWindow: serviceRateLimitWindow,
   });
 
+  registerHttpMetrics(app, "identity-service");
   registerIdentityRoutes(app);
 
   const port = Number(process.env.PORT ?? 3001);

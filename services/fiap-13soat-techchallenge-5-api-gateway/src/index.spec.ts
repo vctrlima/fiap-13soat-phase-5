@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const appMock = vi.hoisted(() => ({
   register: vi.fn().mockResolvedValue(undefined),
+  addHook: vi.fn(),
   get: vi.fn(),
   route: vi.fn(),
   listen: vi.fn().mockResolvedValue(undefined),
@@ -14,6 +15,7 @@ const stopTracingMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const correlationFromHeadersMock = vi.hoisted(() =>
   vi.fn().mockReturnValue("corr-1"),
 );
+const registerHttpMetricsMock = vi.hoisted(() => vi.fn());
 const requiresAuthMock = vi.hoisted(() => vi.fn());
 const resolveRouteTargetMock = vi.hoisted(() => vi.fn());
 const proxyRequestMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
@@ -26,6 +28,7 @@ vi.mock("fastify", () => ({
 vi.mock("@fiap-13soat/shared", () => ({
   correlationFromHeaders: correlationFromHeadersMock,
   initTracing: initTracingMock,
+  registerHttpMetrics: registerHttpMetricsMock,
   registry: { contentType: "text/plain", metrics: () => "metrics" },
   stopTracing: stopTracingMock,
 }));
@@ -76,6 +79,10 @@ describe("api-gateway index", () => {
     await import("./index.js");
 
     expect(initTracingMock).toHaveBeenCalledWith("api-gateway");
+    expect(registerHttpMetricsMock).toHaveBeenCalledWith(
+      appMock,
+      "api-gateway",
+    );
     expect(appMock.listen).toHaveBeenCalledWith({
       host: "0.0.0.0",
       port: 3000,

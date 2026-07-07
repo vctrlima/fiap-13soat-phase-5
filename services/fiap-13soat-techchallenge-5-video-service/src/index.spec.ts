@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const appMock = vi.hoisted(() => ({
   register: vi.fn().mockResolvedValue(undefined),
+  addHook: vi.fn(),
   listen: vi.fn().mockResolvedValue(undefined),
   close: vi.fn().mockResolvedValue(undefined),
   log: { error: vi.fn() },
 }));
 const initTracingMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const stopTracingMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const registerHttpMetricsMock = vi.hoisted(() => vi.fn());
 const initVideoSchemaMock = vi.hoisted(() =>
   vi.fn().mockResolvedValue(undefined),
 );
@@ -17,6 +19,7 @@ const registerRoutesMock = vi.hoisted(() => vi.fn());
 vi.mock("fastify", () => ({ default: vi.fn(() => appMock) }));
 vi.mock("@fiap-13soat/shared", () => ({
   initTracing: initTracingMock,
+  registerHttpMetrics: registerHttpMetricsMock,
   stopTracing: stopTracingMock,
 }));
 vi.mock("./infrastructure/database/postgres.js", () => ({
@@ -53,6 +56,10 @@ describe("video index", () => {
 
     expect(initTracingMock).toHaveBeenCalledWith("video-service");
     expect(initVideoSchemaMock).toHaveBeenCalledTimes(1);
+    expect(registerHttpMetricsMock).toHaveBeenCalledWith(
+      appMock,
+      "video-service",
+    );
     expect(registerRoutesMock).toHaveBeenCalledWith(appMock);
     expect(appMock.listen).toHaveBeenCalledWith({
       host: "0.0.0.0",

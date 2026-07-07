@@ -2,9 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMock = vi.hoisted(() => vi.fn());
 const sendNotificationMock = vi.hoisted(() => vi.fn());
+const activeWorkersSetMock = vi.hoisted(() => vi.fn());
+const queueSizeSetMock = vi.hoisted(() => vi.fn());
+const queueOldestMessageAgeSecondsSetMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@fiap-13soat/shared", () => ({
   sqsClient: { send: sendMock },
+  metrics: {
+    activeWorkers: { set: activeWorkersSetMock },
+    queueSize: { set: queueSizeSetMock },
+    queueOldestMessageAgeSeconds: { set: queueOldestMessageAgeSecondsSetMock },
+  },
 }));
 
 vi.mock("../../application/use-cases/send-notification.js", () => ({
@@ -34,6 +42,14 @@ describe("notification sqs consumer", () => {
       async (command: { constructor?: { name?: string } }) => {
         const commandName = command.constructor?.name;
 
+        if (commandName === "GetQueueAttributesCommand") {
+          return {
+            Attributes: {
+              ApproximateNumberOfMessages: "1",
+              ApproximateAgeOfOldestMessage: "7",
+            },
+          };
+        }
         if (commandName === "ReceiveMessageCommand") {
           return {
             Messages: [
@@ -57,5 +73,7 @@ describe("notification sqs consumer", () => {
 
     expect(sendNotificationMock).toHaveBeenCalledTimes(1);
     expect(sendMock).toHaveBeenCalled();
+    expect(activeWorkersSetMock).toHaveBeenCalledWith(5);
+    expect(queueOldestMessageAgeSecondsSetMock).toHaveBeenCalledWith(7);
   });
 });

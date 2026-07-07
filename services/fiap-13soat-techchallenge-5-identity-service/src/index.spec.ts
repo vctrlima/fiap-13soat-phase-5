@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const appMock = vi.hoisted(() => ({
   register: vi.fn().mockResolvedValue(undefined),
+  addHook: vi.fn(),
   listen: vi.fn().mockResolvedValue(undefined),
   close: vi.fn().mockResolvedValue(undefined),
   log: { error: vi.fn() },
@@ -13,6 +14,7 @@ const loadAppSecretsMock = vi.hoisted(() =>
     .fn()
     .mockResolvedValue({ JWT_SECRET: "secret", JWT_REFRESH_SECRET: "refresh" }),
 );
+const registerHttpMetricsMock = vi.hoisted(() => vi.fn());
 const initIdentitySchemaMock = vi.hoisted(() =>
   vi.fn().mockResolvedValue(undefined),
 );
@@ -23,6 +25,7 @@ vi.mock("fastify", () => ({ default: vi.fn(() => appMock) }));
 vi.mock("@fiap-13soat/shared", () => ({
   initTracing: initTracingMock,
   loadAppSecrets: loadAppSecretsMock,
+  registerHttpMetrics: registerHttpMetricsMock,
   stopTracing: stopTracingMock,
 }));
 vi.mock("./infrastructure/database/postgres.js", () => ({
@@ -59,6 +62,7 @@ describe("identity index", () => {
 
     expect(initTracingMock).toHaveBeenCalledWith("identity-service");
     expect(initIdentitySchemaMock).toHaveBeenCalledTimes(1);
+    expect(registerHttpMetricsMock).toHaveBeenCalledWith(appMock, "identity-service");
     expect(registerRoutesMock).toHaveBeenCalledWith(appMock);
     expect(appMock.listen).toHaveBeenCalledWith({
       host: "0.0.0.0",

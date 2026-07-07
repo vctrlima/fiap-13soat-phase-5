@@ -1,9 +1,10 @@
 import {
   DeleteMessageCommand,
+  GetQueueAttributesCommand,
   ReceiveMessageCommand,
   type Message,
 } from "@aws-sdk/client-sqs";
-import { sqsClient } from "@fiap-13soat/shared";
+import { metrics, sqsClient } from "@fiap-13soat/shared";
 import { sendNotification } from "../../application/use-cases/send-notification.js";
 
 let running = true;
@@ -56,10 +57,31 @@ export const runConsumer = async (): Promise<void> => {
     throw new Error("VIDEO_NOTIFICATION_QUEUE_URL is required");
   }
 
+  metrics.activeWorkers.set(workerConcurrency);
   let pollFailureCount = 0;
 
   while (running) {
     try {
+      const attributes = await sqsClient.send(
+        new GetQueueAttributesCommand({
+          QueueUrl: queueUrl,
+          AttributeNames: [
+            "ApproximateNumberOfMessages",
+            "ApproximateAgeOfOldestMessage",
+          ] as never,
+        }),
+      );
+      const queueAttributes = attributes.Attributes as
+        | Record<string, string>
+        | undefined;
+
+      metrics.queueSize.set(
+        Number(queueAttributes?.ApproximateNumberOfMessages ?? 0),
+      );
+      metrics.queueOldestMessageAgeSeconds.set(
+        Number(queueAttributes?.ApproximateAgeOfOldestMessage ?? 0),
+      );
+
       const response = await sqsClient.send(
         new ReceiveMessageCommand({
           QueueUrl: queueUrl,
@@ -128,4 +150,6 @@ export const runConsumer = async (): Promise<void> => {
       await sleep(waitMs);
     }
   }
+
+  metrics.activeWorkers.set(0);
 };

@@ -1,7 +1,12 @@
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { initTracing, registry, stopTracing } from "@fiap-13soat/shared";
+import {
+  initTracing,
+  registerHttpMetrics,
+  registry,
+  stopTracing,
+} from "@fiap-13soat/shared";
 import Fastify from "fastify";
 import {
   runConsumer,
@@ -24,6 +29,7 @@ const bootstrap = async (): Promise<void> => {
     timeWindow: serviceRateLimitWindow,
   });
 
+  registerHttpMetrics(app, "notification-service");
   app.get("/health/live", async () => ({
     status: "ok",
     service: "notification-service",

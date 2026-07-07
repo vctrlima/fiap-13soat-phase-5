@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const appMock = vi.hoisted(() => ({
   register: vi.fn().mockResolvedValue(undefined),
+  addHook: vi.fn(),
   get: vi.fn(),
   listen: vi.fn().mockResolvedValue(undefined),
   close: vi.fn().mockResolvedValue(undefined),
@@ -9,6 +10,7 @@ const appMock = vi.hoisted(() => ({
 }));
 const initTracingMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const stopTracingMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const registerHttpMetricsMock = vi.hoisted(() => vi.fn());
 const initProcessingSchemaMock = vi.hoisted(() =>
   vi.fn().mockResolvedValue(undefined),
 );
@@ -19,6 +21,7 @@ const stopConsumerMock = vi.hoisted(() => vi.fn());
 vi.mock("fastify", () => ({ default: vi.fn(() => appMock) }));
 vi.mock("@fiap-13soat/shared", () => ({
   initTracing: initTracingMock,
+  registerHttpMetrics: registerHttpMetricsMock,
   registry: { contentType: "text/plain", metrics: () => "metrics" },
   stopTracing: stopTracingMock,
 }));
@@ -57,6 +60,10 @@ describe("processing index", () => {
 
     expect(initTracingMock).toHaveBeenCalledWith("processing-service");
     expect(initProcessingSchemaMock).toHaveBeenCalledTimes(1);
+    expect(registerHttpMetricsMock).toHaveBeenCalledWith(
+      appMock,
+      "processing-service",
+    );
     expect(appMock.listen).toHaveBeenCalledWith({
       host: "0.0.0.0",
       port: 3003,

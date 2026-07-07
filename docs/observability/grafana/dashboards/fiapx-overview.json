@@ -1,39 +1,117 @@
 {
-  "annotations": { "list": [] },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "graphTooltip": 1,
   "panels": [
     {
+      "id": 1,
       "type": "stat",
-      "title": "Uploads Total",
-      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
-      "targets": [{ "expr": "uploads_total", "refId": "A" }]
-    },
-    {
-      "type": "stat",
-      "title": "Processing Completed",
-      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
-      "targets": [{ "expr": "processing_completed_total", "refId": "A" }]
-    },
-    {
-      "type": "stat",
-      "title": "Processing Failed",
-      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
-      "targets": [{ "expr": "processing_failed_total", "refId": "A" }]
-    },
-    {
-      "type": "stat",
-      "title": "Queue Size",
-      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
-      "targets": [{ "expr": "queue_size", "refId": "A" }]
-    },
-    {
-      "type": "timeseries",
-      "title": "Processing Duration",
-      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "title": "Uploads no intervalo por job",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 4 },
       "targets": [
         {
-          "expr": "rate(processing_duration_seconds_sum[5m]) / rate(processing_duration_seconds_count[5m])",
+          "expr": "sum by (job) (increase(uploads_total[$__rate_interval]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Processamentos com falha no intervalo por job",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum by (job) (increase(processing_failed_total[$__rate_interval]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Processamentos concluídos no intervalo por job",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum by (job) (increase(processing_completed_total[$__rate_interval]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Tamanho da fila por job",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum by (job) (queue_size)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Tempo médio de processamento por job",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (job) (rate(processing_duration_seconds_sum[$__rate_interval])) / sum by (job) (rate(processing_duration_seconds_count[$__rate_interval]))",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Requests HTTP no intervalo por serviço",
+      "gridPos": { "x": 0, "y": 16, "w": 19, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(http_requests_total[$__rate_interval]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Idade da fila mais antiga por serviço",
+      "gridPos": { "x": 19, "y": 16, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "expr": "max by (service) (queue_oldest_message_age_seconds)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Latência HTTP média por serviço",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (service) (rate(http_request_duration_seconds_sum[$__rate_interval])) / sum by (service) (rate(http_request_duration_seconds_count[$__rate_interval]))",
+          "legendFormat": "{{service}}",
           "refId": "A"
         }
       ]

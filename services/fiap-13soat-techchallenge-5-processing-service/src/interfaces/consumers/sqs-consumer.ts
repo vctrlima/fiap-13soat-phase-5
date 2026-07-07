@@ -70,12 +70,21 @@ export const runConsumer = async (): Promise<void> => {
       const attributes = await sqsClient.send(
         new GetQueueAttributesCommand({
           QueueUrl: queueUrl,
-          AttributeNames: ["ApproximateNumberOfMessages"],
+          AttributeNames: [
+            "ApproximateNumberOfMessages",
+            "ApproximateAgeOfOldestMessage",
+          ] as never,
         }),
       );
+      const queueAttributes = attributes.Attributes as
+        | Record<string, string>
+        | undefined;
 
       metrics.queueSize.set(
-        Number(attributes.Attributes?.ApproximateNumberOfMessages ?? 0),
+        Number(queueAttributes?.ApproximateNumberOfMessages ?? 0),
+      );
+      metrics.queueOldestMessageAgeSeconds.set(
+        Number(queueAttributes?.ApproximateAgeOfOldestMessage ?? 0),
       );
 
       const response = await sqsClient.send(
